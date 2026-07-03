@@ -48,6 +48,7 @@ def test_check_errors_on_unknown_site(tmp_path, monkeypatch):
 
 def test_check_runs_a_site_and_show_reports_latest(tmp_path, monkeypatch):
     monkeypatch.setenv("TEND_HOME", str(tmp_path))
+    monkeypatch.setattr(runner.crawl, "discover", lambda url, **kwargs: [url])
     monkeypatch.setattr(runner, "run_all", lambda url: [_ONPAGE_OK])
     cli.invoke(app, ["track", "Bob's Bakery", "https://example.com"])
 
@@ -61,6 +62,7 @@ def test_check_runs_a_site_and_show_reports_latest(tmp_path, monkeypatch):
 
 def test_show_and_report_accept_positional_run_id(tmp_path, monkeypatch):
     monkeypatch.setenv("TEND_HOME", str(tmp_path))
+    monkeypatch.setattr(runner.crawl, "discover", lambda url, **kwargs: [url])
     monkeypatch.setattr(runner, "run_all", lambda url: [_ONPAGE_OK])
     cli.invoke(app, ["track", "Bob's Bakery", "https://example.com"])
     cli.invoke(app, ["check", "bobs-bakery"])
@@ -77,6 +79,7 @@ def test_show_and_report_accept_positional_run_id(tmp_path, monkeypatch):
 
 def test_runs_lists_run_ids_after_check(tmp_path, monkeypatch):
     monkeypatch.setenv("TEND_HOME", str(tmp_path))
+    monkeypatch.setattr(runner.crawl, "discover", lambda url, **kwargs: [url])
     monkeypatch.setattr(runner, "run_all", lambda url: [])
     cli.invoke(app, ["track", "Bob's Bakery", "https://example.com"])
     cli.invoke(app, ["check", "bobs-bakery"])
@@ -89,9 +92,11 @@ def test_runs_lists_run_ids_after_check(tmp_path, monkeypatch):
 
 def test_diff_reports_between_two_runs(tmp_path, monkeypatch):
     monkeypatch.setenv("TEND_HOME", str(tmp_path))
+    monkeypatch.setattr(runner.crawl, "discover", lambda url, **kwargs: [url])
     monkeypatch.setattr(runner, "run_all", lambda url: [_ONPAGE_OK])
     cli.invoke(app, ["track", "Bob's Bakery", "https://example.com"])
     cli.invoke(app, ["check", "bobs-bakery"])
+    monkeypatch.setattr(runner.crawl, "discover", lambda url, **kwargs: [url])
     monkeypatch.setattr(runner, "run_all", lambda url: [_ONPAGE_FAIL])
     cli.invoke(app, ["check", "bobs-bakery"])
     run_ids = runner.list_runs("bobs-bakery")
