@@ -37,9 +37,13 @@ def run(url: str) -> dict:
     except json.JSONDecodeError:
         parsed = {"raw_stdout": result.stdout}
 
+    detail = {"returncode": result.returncode, "output": parsed}
+    if result.returncode != 0 and result.stderr:
+        detail["stderr"] = result.stderr.strip()
+
     return {
         "name": "links",
         "ok": result.returncode == 0,
         "skipped": False,
-        "detail": {"returncode": result.returncode, "output": parsed},
+        "detail": detail,
     }

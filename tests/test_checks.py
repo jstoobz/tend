@@ -107,6 +107,22 @@ def test_links_check_strips_volatile_duration_fields(monkeypatch):
     assert output["total"] == 2
 
 
+def test_links_check_keeps_stderr_when_tool_fails(monkeypatch):
+    monkeypatch.setattr(links.shutil, "which", lambda name: "/opt/homebrew/bin/lychee")
+
+    class _FakeCompleted:
+        returncode = 1
+        stdout = ""
+        stderr = "error: network failure\n"
+
+    monkeypatch.setattr(links.subprocess, "run", lambda *a, **k: _FakeCompleted())
+
+    result = links.run("https://site.example")
+
+    assert result["ok"] is False
+    assert result["detail"]["stderr"] == "error: network failure"
+
+
 def test_run_all_returns_one_result_per_registered_check(monkeypatch):
     monkeypatch.setattr(
         onpage, "run", lambda url: {"name": "onpage", "ok": True, "skipped": False, "detail": {}}
