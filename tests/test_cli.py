@@ -59,6 +59,22 @@ def test_check_runs_a_site_and_show_reports_latest(tmp_path, monkeypatch):
     assert "onpage" in show_result.stdout
 
 
+def test_show_and_report_accept_positional_run_id(tmp_path, monkeypatch):
+    monkeypatch.setenv("TEND_HOME", str(tmp_path))
+    monkeypatch.setattr(runner, "run_all", lambda url: [_ONPAGE_OK])
+    cli.invoke(app, ["track", "Bob's Bakery", "https://example.com"])
+    cli.invoke(app, ["check", "bobs-bakery"])
+    run_id = runner.list_runs("bobs-bakery")[0]
+
+    show_result = cli.invoke(app, ["show", "bobs-bakery", run_id])
+    report_result = cli.invoke(app, ["report", "bobs-bakery", run_id])
+
+    assert show_result.exit_code == 0
+    assert run_id in show_result.stdout
+    assert report_result.exit_code == 0
+    assert run_id in report_result.stdout
+
+
 def test_runs_lists_run_ids_after_check(tmp_path, monkeypatch):
     monkeypatch.setenv("TEND_HOME", str(tmp_path))
     monkeypatch.setattr(runner, "run_all", lambda url: [])

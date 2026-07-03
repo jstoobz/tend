@@ -66,7 +66,11 @@ def runs_command(slug: str, json_out: bool = typer.Option(False, "--json")) -> N
 
 
 @app.command()
-def show(slug: str, run_id: str = "latest", json_out: bool = typer.Option(False, "--json")) -> None:
+def show(
+    slug: str,
+    run_id: str = typer.Argument("latest"),
+    json_out: bool = typer.Option(False, "--json"),
+) -> None:
     """Show a single run (defaults to the latest)."""
     run_dir = runner.runs_root(slug) / run_id
     if not (run_dir / "manifest.json").exists():
@@ -93,7 +97,7 @@ def diff_command(slug: str, run_a: str, run_b: str) -> None:
 
 
 @app.command(name="report")
-def report_command(slug: str, run_id: str = "latest") -> None:
+def report_command(slug: str, run_id: str = typer.Argument("latest")) -> None:
     """Render a run as human-readable text."""
     run_dir = runner.runs_root(slug) / run_id
     if not (run_dir / "manifest.json").exists():
