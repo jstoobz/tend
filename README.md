@@ -1,5 +1,9 @@
 # tend
 
+"To tend, simply put, is to rip it and ship it."
+
+— Stoobz
+
 Iterative SEO audits and improvement tracking for small-business websites.
 
 `tend` tracks a site, runs a set of checks against it, and stores each run as an
