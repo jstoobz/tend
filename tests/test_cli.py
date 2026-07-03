@@ -111,7 +111,17 @@ def test_diff_errors_cleanly_on_unknown_run_id(tmp_path, monkeypatch):
 
     assert result.exit_code == 1
     assert not isinstance(result.exception, FileNotFoundError)
-    assert "no run 'nope-a'" in result.stdout
+    assert "no run 'nope-a'" in result.stderr
+
+
+def test_error_messages_go_to_stderr_leaving_stdout_clean(tmp_path, monkeypatch):
+    monkeypatch.setenv("TEND_HOME", str(tmp_path))
+
+    result = cli.invoke(app, ["show", "ghost-site", "--json"])
+
+    assert result.exit_code == 1
+    assert result.stdout == ""
+    assert "no run 'latest' for site 'ghost-site'" in result.stderr
 
 
 def test_doctor_reports_resolved_paths_as_json(tmp_path, monkeypatch):

@@ -1,5 +1,6 @@
 import json
 import shutil
+import sys
 
 import typer
 
@@ -45,7 +46,7 @@ def check(slug: str, json_out: bool = typer.Option(False, "--json")) -> None:
     try:
         site = sites.get_site(slug)
     except FileNotFoundError as exc:
-        print(f"error: {exc}")
+        print(f"error: {exc}", file=sys.stderr)
         raise typer.Exit(1) from exc
     finalized = runner.execute_run(site_slug=slug, url=site["url"])
     if json_out:
@@ -74,7 +75,7 @@ def show(
     """Show a single run (defaults to the latest)."""
     run_dir = runner.runs_root(slug) / run_id
     if not (run_dir / "manifest.json").exists():
-        print(f"error: no run '{run_id}' for site '{slug}'")
+        print(f"error: no run '{run_id}' for site '{slug}'", file=sys.stderr)
         raise typer.Exit(1)
     manifest = store.read_json(run_dir / "manifest.json")
     if json_out:
@@ -90,7 +91,7 @@ def diff_command(slug: str, run_a: str, run_b: str) -> None:
     dir_b = runner.runs_root(slug) / run_b
     for run_id, run_dir in ((run_a, dir_a), (run_b, dir_b)):
         if not (run_dir / "manifest.json").exists():
-            print(f"error: no run '{run_id}' for site '{slug}'")
+            print(f"error: no run '{run_id}' for site '{slug}'", file=sys.stderr)
             raise typer.Exit(1)
     result = diff.diff_runs(dir_a, dir_b)
     _emit_json(result)
@@ -101,7 +102,7 @@ def report_command(slug: str, run_id: str = typer.Argument("latest")) -> None:
     """Render a run as human-readable text."""
     run_dir = runner.runs_root(slug) / run_id
     if not (run_dir / "manifest.json").exists():
-        print(f"error: no run '{run_id}' for site '{slug}'")
+        print(f"error: no run '{run_id}' for site '{slug}'", file=sys.stderr)
         raise typer.Exit(1)
     manifest = store.read_json(run_dir / "manifest.json")
     print(report.render_run(manifest))
