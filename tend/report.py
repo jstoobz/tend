@@ -8,4 +8,10 @@ def render_run(manifest: dict) -> str:
         else:
             status = "FAIL"
         lines.append(f"  [{status}] {check['name']}")
+    pages = manifest.get("pages")
+    if pages:
+        lines.append(f"  pages ({len(pages)}):")
+        for page in pages:
+            status = "OK" if page["ok"] else "FAIL"
+            lines.append(f"    [{status}] {page['url']}")
     return "\n".join(lines)
