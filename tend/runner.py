@@ -15,7 +15,7 @@ def execute_run(site_slug: str, url: str) -> dict:
 
     manifest = model.run_manifest(run_id=run_id, site_slug=site_slug)
     results = run_all(url)
-    finalized = model.finalize_run_manifest(manifest, checks=results)
+    finalized = model.finalize_run_manifest(manifest, checks=results, pages=[])
 
     store.atomic_write_json(run_dir / "manifest.json", finalized)
     store.swap_symlink(runs_root(site_slug) / "latest", run_dir)

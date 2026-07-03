@@ -3,7 +3,9 @@ import secrets
 import unicodedata
 from datetime import UTC, datetime
 
-SCHEMA_VERSION = 1
+SITE_SCHEMA_VERSION = 1
+RUN_SCHEMA_VERSION = 2
+PAGE_SCHEMA_VERSION = 1
 
 _SUFFIX_ALPHABET = "abcdefghjkmnpqrstvwxyz23456789"  # no 0/1/i/l/o ambiguity
 
@@ -35,7 +37,7 @@ def slugify(value: str) -> str:
 
 def site_record(name: str, url: str) -> dict:
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": SITE_SCHEMA_VERSION,
         "slug": slugify(name),
         "name": name,
         "url": url,
@@ -45,20 +47,30 @@ def site_record(name: str, url: str) -> dict:
 
 def run_manifest(run_id: str, site_slug: str) -> dict:
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": RUN_SCHEMA_VERSION,
         "run_id": run_id,
         "site_slug": site_slug,
         "status": "running",
         "started_at": _now_iso(),
         "finished_at": None,
         "checks": [],
+        "pages": [],
     }
 
 
-def finalize_run_manifest(manifest: dict, checks: list[dict]) -> dict:
+def finalize_run_manifest(manifest: dict, checks: list[dict], pages: list[dict]) -> dict:
     return {
         **manifest,
         "status": "complete",
         "finished_at": _now_iso(),
+        "checks": checks,
+        "pages": pages,
+    }
+
+
+def page_record(url: str, checks: list[dict]) -> dict:
+    return {
+        "schema_version": PAGE_SCHEMA_VERSION,
+        "url": url,
         "checks": checks,
     }
