@@ -1,5 +1,6 @@
 import re
 import secrets
+import unicodedata
 from datetime import UTC, datetime
 
 SCHEMA_VERSION = 1
@@ -21,6 +22,7 @@ def slugify(value: str) -> str:
     value = value.strip().lower()
     if not value:
         raise ValueError("cannot slugify an empty value")
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
     value = re.sub(r"^https?://", "", value)
     value = re.sub(r"^www\.", "", value)
     value = value.replace("'", "")

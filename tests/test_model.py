@@ -23,9 +23,19 @@ def test_slugify_strips_scheme_and_www_from_a_url():
     assert model.slugify("https://www.example.com/") == "example-com"
 
 
+def test_slugify_folds_accents_and_typographic_apostrophes_to_ascii():
+    assert model.slugify("Bob's Café & Bakery") == "bobs-cafe-bakery"
+    assert model.slugify("José's Autohaus — München") == "joses-autohaus-munchen"
+
+
 def test_slugify_rejects_empty_input():
     with pytest.raises(ValueError):
         model.slugify("   ")
+
+
+def test_slugify_rejects_input_with_no_ascii_foldable_characters():
+    with pytest.raises(ValueError):
+        model.slugify("北京烤鸭店")
 
 
 def test_site_record_carries_schema_version_and_fields():
