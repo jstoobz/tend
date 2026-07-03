@@ -4,6 +4,18 @@ import subprocess
 
 TOOL = "lychee"
 
+# lychee embeds wall-clock timings at every level of its report; storing them
+# would make any two runs diff as changed. Run timing lives on the manifest.
+_VOLATILE_KEYS = {"duration"}
+
+
+def _strip_volatile(value):
+    if isinstance(value, dict):
+        return {k: _strip_volatile(v) for k, v in value.items() if k not in _VOLATILE_KEYS}
+    if isinstance(value, list):
+        return [_strip_volatile(v) for v in value]
+    return value
+
 
 def run(url: str) -> dict:
     if shutil.which(TOOL) is None:
@@ -21,7 +33,7 @@ def run(url: str) -> dict:
         timeout=60,
     )
     try:
-        parsed = json.loads(result.stdout)
+        parsed = _strip_volatile(json.loads(result.stdout))
     except json.JSONDecodeError:
         parsed = {"raw_stdout": result.stdout}
 

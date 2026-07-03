@@ -1,3 +1,5 @@
+import json
+
 from tend.checks import CHECK_REGISTRY, links, onpage, run_all
 
 
@@ -66,6 +68,43 @@ def test_links_check_runs_tool_when_present(monkeypatch):
 
     assert result["skipped"] is False
     assert result["ok"] is True
+
+
+def test_links_check_strips_volatile_duration_fields(monkeypatch):
+    monkeypatch.setattr(links.shutil, "which", lambda name: "/opt/homebrew/bin/lychee")
+
+    real_shaped_output = {
+        "total": 2,
+        "errors": 1,
+        "error_map": {
+            "https://site.example": [
+                {
+                    "url": "https://site.example/broken",
+                    "status": {"text": "Rejected status code: 404 Not Found", "code": 404},
+                    "span": {"line": 1, "column": 76},
+                    "duration": {"secs": 0, "nanos": 569811875},
+                }
+            ]
+        },
+        "duration": {"secs": 0, "nanos": 770958625},
+    }
+
+    class _FakeCompleted:
+        returncode = 2
+        stdout = json.dumps(real_shaped_output)
+        stderr = ""
+
+    monkeypatch.setattr(links.subprocess, "run", lambda *a, **k: _FakeCompleted())
+
+    result = links.run("https://site.example")
+
+    output = result["detail"]["output"]
+    assert "duration" not in output
+    broken = output["error_map"]["https://site.example"][0]
+    assert "duration" not in broken
+    assert broken["status"]["code"] == 404
+    assert broken["span"] == {"line": 1, "column": 76}
+    assert output["total"] == 2
 
 
 def test_run_all_returns_one_result_per_registered_check(monkeypatch):
