@@ -46,8 +46,11 @@ tend sites --json
 tend check <slug>
 ```
 
-Runs the check suite against the site's URL and writes the result as a new, immutable
-run. Updates the site's `latest` pointer on success.
+Discovers the site's pages (same-origin breadth-first crawl: up to 25 pages, depth 2,
+0.5s between fetches; `www.` and apex hosts are treated as one origin), runs the check
+suite against every page, and writes the result as a new, immutable run — one artifact
+per page under `pages/`, plus a manifest. Updates the site's `latest` pointer on
+success.
 
 Checks currently included:
 
@@ -73,10 +76,11 @@ tend report <slug> [<run-id>] # same data, plain-text report
 ### Diff two runs
 
 ```bash
-tend diff <slug> <run-a> <run-id-b>
+tend diff <slug> <run-id-a> <run-id-b>
 ```
 
-Reports which checks changed, were added, or were removed between two runs.
+Reports which root-page checks changed, were added, or were removed between two runs.
+Output is always JSON.
 
 ### Check your setup
 

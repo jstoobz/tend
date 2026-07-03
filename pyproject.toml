@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tend"
-version = "0.0.1"
+version = "0.0.2"
 description = "Iterative SEO audits and improvement tracking for small-business websites"
 readme = "README.md"
 license = { text = "MIT" }
