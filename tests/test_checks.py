@@ -107,6 +107,64 @@ def test_links_check_strips_volatile_duration_fields(monkeypatch):
     assert output["total"] == 2
 
 
+def test_links_check_orders_link_map_entries_deterministically(monkeypatch):
+    monkeypatch.setattr(links.shutil, "which", lambda name: "/opt/homebrew/bin/lychee")
+
+    real_shaped_output = {
+        "total": 4,
+        "errors": 2,
+        "error_map": {
+            "https://site.example": [
+                {
+                    "url": "https://site.example/broken",
+                    "status": {"text": "Rejected status code: 404 Not Found", "code": 404},
+                    "span": {"line": 9, "column": 1},
+                },
+                {
+                    "url": "https://site.example/broken",
+                    "status": {"text": "Rejected status code: 404 Not Found", "code": 404},
+                    "span": {"line": 2, "column": 5},
+                },
+            ]
+        },
+        "excluded_map": {
+            "https://site.example": [
+                {
+                    "url": "tel:5551234",
+                    "status": {
+                        "text": "Excluded",
+                        "details": "This is due to your 'exclude' values",
+                    },
+                    "span": {"line": 556, "column": 21},
+                },
+                {
+                    "url": "mailto:owner@site.example",
+                    "status": {
+                        "text": "Excluded",
+                        "details": "This is due to your 'exclude' values",
+                    },
+                    "span": {"line": 550, "column": 21},
+                },
+            ]
+        },
+    }
+
+    class _FakeCompleted:
+        returncode = 2
+        stdout = json.dumps(real_shaped_output)
+        stderr = ""
+
+    monkeypatch.setattr(links.subprocess, "run", lambda *a, **k: _FakeCompleted())
+
+    result = links.run("https://site.example")
+
+    output = result["detail"]["output"]
+    excluded = output["excluded_map"]["https://site.example"]
+    assert [e["url"] for e in excluded] == ["mailto:owner@site.example", "tel:5551234"]
+    errors = output["error_map"]["https://site.example"]
+    assert [e["span"]["line"] for e in errors] == [2, 9]
+
+
 def test_links_check_keeps_stderr_when_tool_fails(monkeypatch):
     monkeypatch.setattr(links.shutil, "which", lambda name: "/opt/homebrew/bin/lychee")
 
